@@ -12,7 +12,7 @@ class Train(models.Model):
 
     class Meta:
         verbose_name_plural = "trains"
-        ordering = "name"
+        ordering = ("name",)
 
     def __str__(self):
         return f"{self.name}, type of-{self.train_type} with {self.cargo_number} cargos"
@@ -32,11 +32,11 @@ class Station(models.Model):
 
     class Meta:
         verbose_name_plural = "stations"
-        ordering = "name"
+        ordering = ("name",)
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Station, on_delete=models.CASCADE)
+    source = models.ForeignKey(Station, on_delete=models.CASCADE, related_name="routes")
     destination = models.ForeignKey(Station, on_delete=models.CASCADE)
     distance = models.FloatField(null=True)
 
@@ -49,7 +49,7 @@ class Crew(models.Model):
     last_name = models.CharField(max_length=100)
 
     class Meta:
-        ordering = "last_name"
+        ordering = ("last_name",)
 
     def __str__(self):
         return f"name: {self.first_name} {self.last_name}"
@@ -67,7 +67,7 @@ class Order(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = "created_at"
+        ordering = ("created_at",)
 
 
 class Ticket(models.Model):
@@ -75,4 +75,4 @@ class Ticket(models.Model):
     cargo = models.IntegerField()
     seat = models.IntegerField()
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
