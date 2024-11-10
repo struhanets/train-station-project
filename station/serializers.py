@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from station.models import (
@@ -24,6 +25,14 @@ class TrainSerializer(serializers.ModelSerializer):
         )
 
 
+class TrainListSerializer(TrainSerializer):
+    train_type = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field="name"
+    )
+
+
 class TrainTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainType
@@ -37,9 +46,24 @@ class StationSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
+    distance = serializers.ReadOnlyField()
+
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance",)
+
+
+class RouteListSerializer(RouteSerializer):
+    source = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field="name"
+    )
+    destination = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field="name"
+    )
 
 
 class CrewSerializer(serializers.ModelSerializer):
@@ -64,3 +88,17 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ("id", "train", "cargo", "seat", "journey", "order",)
+
+
+class TicketListSerializer(TicketSerializer):
+    train = serializers.SlugRelatedField(
+        read_only=True,
+        many=False,
+        slug_field="name"
+    )
+
+
+class TicketDetailSerializer(TicketSerializer):
+    train = TrainSerializer(many=False)
+    journey = JourneySerializer()
+    order = OrderSerializer(many=False)

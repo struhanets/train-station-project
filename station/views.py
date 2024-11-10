@@ -18,13 +18,27 @@ from station.serializers import (
     RouteSerializer,
     CrewSerializer,
     OrderSerializer,
-    TicketSerializer
+    TicketSerializer,
+    JourneySerializer, TicketDetailSerializer, TicketListSerializer, TrainListSerializer, RouteListSerializer
 )
 
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
-    serializer_class = TrainSerializer
+    serializer_class = TrainListSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TrainListSerializer
+
+        return TrainSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action == 'list':
+            return queryset.select_related()
+
+        return queryset
 
 
 class TrainTypeViewSet(viewsets.ModelViewSet):
@@ -39,7 +53,13 @@ class StationViewSet(viewsets.ModelViewSet):
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
-    serializer_class = RouteSerializer
+    serializer_class = RouteListSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RouteListSerializer
+
+        return RouteSerializer
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -49,7 +69,7 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
-    serializer_class = CrewSerializer
+    serializer_class = JourneySerializer
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -59,5 +79,19 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
+    serializer_class = TicketListSerializer
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TicketListSerializer
+        if self.action == 'retrieve':
+            return TicketDetailSerializer
+
+        return TicketSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action in ('list', 'retrieve'):
+            return queryset.select_related()
+
+        return queryset
