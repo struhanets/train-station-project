@@ -1,7 +1,4 @@
-import math
-
 from django.db import models
-from django.db.models import UniqueConstraint
 
 from TrainStation.settings import AUTH_USER_MODEL
 from user.models import User
@@ -46,43 +43,6 @@ class Route(models.Model):
     destination = models.ForeignKey(Station, on_delete=models.CASCADE)
     distance = models.FloatField(null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        # Перевіряємо, чи є у станцій координати
-        if (
-            self.source.latitude
-            and self.source.longitude
-            and self.destination.latitude
-            and self.destination.longitude
-        ):
-            self.distance = self.calculate_distance(
-                self.source.latitude, self.source.longitude,
-                self.destination.latitude, self.destination.longitude
-            )
-        super().save(*args, **kwargs)
-
-    @staticmethod
-    def calculate_distance(lat1, lon1, lat2, lon2):
-        # Радіус Землі в кілометрах
-        R = 6371.0
-
-        # Перетворення широти та довготи з градусів у радіани
-        lat1_rad = math.radians(lat1)
-        lon1_rad = math.radians(lon1)
-        lat2_rad = math.radians(lat2)
-        lon2_rad = math.radians(lon2)
-
-        # Різниця координат
-        dlat = lat2_rad - lat1_rad
-        dlon = lon2_rad - lon1_rad
-
-        # Формула Гарвіна
-        a = math.sin(dlat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-        # Відстань
-        distance = R * c
-        return round(distance, 2)
-
     def __str__(self):
         return f"{self.source.name} - {self.destination.name}, distance: {self.distance} km."
 
@@ -118,9 +78,7 @@ class Ticket(models.Model):
     cargo = models.IntegerField()
     seat = models.IntegerField()
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=["seat", "journey"], name="unique_ticket_seat_journey")
-        ]
+    def __str__(self):
+        return f"cargo: {self.cargo}, seat: {self.seat}"

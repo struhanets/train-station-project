@@ -1,3 +1,5 @@
+import math
+
 from django.db import transaction
 from rest_framework import serializers
 
@@ -14,6 +16,12 @@ from station.models import (
 
 
 class TrainSerializer(serializers.ModelSerializer):
+    train_type = serializers.SlugRelatedField(
+        many=False,
+        read_only=True,
+        slug_field="name"
+    )
+
     class Meta:
         model = Train
         fields = (
@@ -23,14 +31,6 @@ class TrainSerializer(serializers.ModelSerializer):
             "places_in_cargo",
             "train_type",
         )
-
-
-class TrainListSerializer(TrainSerializer):
-    train_type = serializers.SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field="name"
-    )
 
 
 class TrainTypeSerializer(serializers.ModelSerializer):
@@ -46,11 +46,41 @@ class StationSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
-    distance = serializers.ReadOnlyField()
+    source = StationSerializer()
+    destination = StationSerializer()
+    distance = serializers.SerializerMethodField()
 
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance",)
+
+    def get_distance(self, obj):
+        """Метод для динамічного обчислення відстані між станціями"""
+        if (obj.source.latitude
+                and obj.source.longitude
+                and obj.destination.latitude
+                and obj.destination.longitude
+        ):
+            return self.calculate_distance(
+                obj.source.latitude, obj.source.longitude,
+                obj.destination.latitude, obj.destination.longitude
+            )
+        return None
+
+    @staticmethod
+    def calculate_distance(lat1, lon1, lat2, lon2):
+        """Формула Гарвіна для обчислення відстані між двома координатами"""
+        R = 6371.0  # Радіус Землі в кілометрах
+        lat1_rad = math.radians(lat1)
+        lon1_rad = math.radians(lon1)
+        lat2_rad = math.radians(lat2)
+        lon2_rad = math.radians(lon2)
+        dlat = lat2_rad - lat1_rad
+        dlon = lon2_rad - lon1_rad
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        distance = R * c
+        return round(distance, 2)  # Округлення до 2 знаків після коми
 
 
 class RouteListSerializer(RouteSerializer):
@@ -75,19 +105,34 @@ class CrewSerializer(serializers.ModelSerializer):
 class JourneySerializer(serializers.ModelSerializer):
     class Meta:
         model = Journey
-        fields = ("id", "route", "train", "departure_time", "arrival_time",)
+        fields = ("id", "route", "departure_time", "arrival_time", "train",)
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = ("id", "created_at", "user",)
+class JourneyListSerializer(JourneySerializer):
+    train = TrainSerializer()
 
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ("id", "train", "cargo", "seat", "journey", "order",)
+        fields = ("id", "train", "cargo", "seat", "journey",)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = ("id", "created_at", "tickets",)
+
+    def create(self, validated_data):
+        print(validated_data)
+        with transaction.atomic():
+            tickets_data = validated_data.pop('tickets')
+            order = Order.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=order, **ticket_data)
+            return order
 
 
 class TicketListSerializer(TicketSerializer):
@@ -97,8 +142,3 @@ class TicketListSerializer(TicketSerializer):
         slug_field="name"
     )
 
-
-class TicketDetailSerializer(TicketSerializer):
-    train = TrainSerializer(many=False)
-    journey = JourneySerializer()
-    order = OrderSerializer(many=False)
