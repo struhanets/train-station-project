@@ -14,8 +14,12 @@ class Train(models.Model):
         verbose_name_plural = "trains"
         ordering = ("name",)
 
+    @property
+    def seats_in_train(self):
+        return self.cargo_number * self.places_in_cargo
+
     def __str__(self):
-        return f"{self.name}, type of-{self.train_type} with {self.cargo_number} cargos"
+        return f"{self.name}"
 
 
 class TrainType(models.Model):
@@ -43,8 +47,14 @@ class Route(models.Model):
     destination = models.ForeignKey(Station, on_delete=models.CASCADE)
     distance = models.FloatField(null=True, blank=True)
 
+    @property
+    def title(self):
+        # Формуємо динамічне поле title на основі значень source, destination та distance
+        return f"{self.source.name} - {self.destination.name}, distance: {self.distance}"
+
     def __str__(self):
-        return f"{self.source.name} - {self.destination.name}, distance: {self.distance} km."
+        # Використовуємо властивість title для представлення об'єкта як рядка
+        return self.title
 
 
 class Crew(models.Model):
@@ -64,6 +74,9 @@ class Journey(models.Model):
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
+    def __str__(self):
+        return f"{self.departure_time} on train {self.train.name}, route {self.route}"
+
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,13 +85,33 @@ class Order(models.Model):
     class Meta:
         ordering = ("created_at",)
 
+    def __str__(self):
+        return f"{self.user} buy a ticket for {self.created_at}"
+
 
 class Ticket(models.Model):
-    train = models.ForeignKey(Train, on_delete=models.CASCADE, related_name="tickets")
+    train = models.ForeignKey(Train, on_delete=models.CASCADE, related_name="train_tickets")
     cargo = models.IntegerField()
     seat = models.IntegerField()
-    journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
+    journey = models.ForeignKey(Journey, on_delete=models.CASCADE, related_name="journey_tickets")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
+    class Meta:
+        unique_together = ("seat", "journey")
+
     def __str__(self):
-        return f"cargo: {self.cargo}, seat: {self.seat}"
+        return f"{self.journey} - (seat - {self.seat})"
+
+    @staticmethod
+    def validate_seat(seat: int, num_seats: int, error_to_rise):
+        if not (1 <= seat <= num_seats):
+            raise error_to_rise(
+                {
+                    "seat": f"The seat must be in range [1, {num_seats}]"
+                }
+            )
+
+    def clean(self):
+        Ticket.validate_seat(self.seat, self.train.seats_in_train, ValueError)
+
+

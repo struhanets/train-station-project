@@ -18,11 +18,9 @@ from station.serializers import (
     RouteSerializer,
     CrewSerializer,
     OrderSerializer,
-    TicketSerializer,
     JourneySerializer,
-    TicketListSerializer,
     RouteListSerializer,
-    JourneyListSerializer,
+    JourneyRetrieveSerializer,
 )
 
 
@@ -31,9 +29,12 @@ class TrainViewSet(viewsets.ModelViewSet):
     serializer_class = TrainSerializer
 
     def get_queryset(self):
-        queryset = self.queryset
-        if self.action == 'list':
-            return queryset.select_related()
+        queryset = self.queryset.select_related()
+
+        train_type = self.request.query_params.get("train_type")
+        if train_type:
+            train_type_ids = [int(train_type_id) for train_type_id in train_type.split(",")]
+            queryset = queryset.filter(train_type__id__in=train_type_ids)
 
         return queryset
 
@@ -50,7 +51,7 @@ class StationViewSet(viewsets.ModelViewSet):
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
-    serializer_class = RouteListSerializer
+    serializer_class = RouteSerializer
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -61,7 +62,15 @@ class RouteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         if self.action == 'list':
-            return queryset.select_related()
+            queryset = queryset.select_related('source', 'destination')
+
+            source = self.request.query_params.get("source")
+            destination = self.request.query_params.get("destination")
+
+            if source:
+                queryset = queryset.filter(source__name__icontains=source)
+            if destination:
+                queryset = queryset.filter(destination__name__icontains=destination)
 
         return queryset
 
@@ -73,20 +82,18 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
-    serializer_class = JourneyListSerializer
+    serializer_class = JourneySerializer
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return JourneyListSerializer
+        if self.action == 'retrieve':
+            return JourneyRetrieveSerializer
 
         return JourneySerializer
 
     def get_queryset(self):
-        queryset = Journey.objects.all()
-        if self.action == 'list':
-            return queryset.select_related("route", "route__destination", "train", "route__source")
+        queryset = self.queryset.select_related()
 
-        return queryset
+
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -98,21 +105,3 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-
-class TicketViewSet(viewsets.ModelViewSet):
-    queryset = Ticket.objects.all()
-    serializer_class = TicketListSerializer
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return TicketListSerializer
-
-        return TicketSerializer
-
-    def get_queryset(self):
-        queryset = self.queryset
-        if self.action == "list":
-            return queryset.select_related()
-
-        return queryset

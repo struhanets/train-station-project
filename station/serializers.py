@@ -15,12 +15,13 @@ from station.models import (
 )
 
 
+class TrainTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainType
+        fields = ("id", "name",)
+
+
 class TrainSerializer(serializers.ModelSerializer):
-    train_type = serializers.SlugRelatedField(
-        many=False,
-        read_only=True,
-        slug_field="name"
-    )
 
     class Meta:
         model = Train
@@ -30,13 +31,8 @@ class TrainSerializer(serializers.ModelSerializer):
             "cargo_number",
             "places_in_cargo",
             "train_type",
+            "seats_in_train"
         )
-
-
-class TrainTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrainType
-        fields = ("id", "name",)
 
 
 class StationSerializer(serializers.ModelSerializer):
@@ -46,26 +42,11 @@ class StationSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
-    source = StationSerializer()
-    destination = StationSerializer()
-    distance = serializers.SerializerMethodField()
+    distance = serializers.ReadOnlyField()
 
     class Meta:
         model = Route
-        fields = ("id", "source", "destination", "distance",)
-
-    def get_distance(self, obj):
-        """Метод для динамічного обчислення відстані між станціями"""
-        if (obj.source.latitude
-                and obj.source.longitude
-                and obj.destination.latitude
-                and obj.destination.longitude
-        ):
-            return self.calculate_distance(
-                obj.source.latitude, obj.source.longitude,
-                obj.destination.latitude, obj.destination.longitude
-            )
-        return None
+        fields = ("id", "source", "destination", "distance", "title",)
 
     @staticmethod
     def calculate_distance(lat1, lon1, lat2, lon2):
@@ -81,6 +62,17 @@ class RouteSerializer(serializers.ModelSerializer):
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance = R * c
         return round(distance, 2)  # Округлення до 2 знаків після коми
+
+    def create(self, validated_data):
+        # Обчислюємо distance, якщо координати вказані
+        source = validated_data['source']
+        destination = validated_data['destination']
+        if source.latitude and source.longitude and destination.latitude and destination.longitude:
+            validated_data['distance'] = self.calculate_distance(
+                source.latitude, source.longitude,
+                destination.latitude, destination.longitude
+            )
+        return super().create(validated_data)
 
 
 class RouteListSerializer(RouteSerializer):
@@ -108,14 +100,29 @@ class JourneySerializer(serializers.ModelSerializer):
         fields = ("id", "route", "departure_time", "arrival_time", "train",)
 
 
-class JourneyListSerializer(JourneySerializer):
+class JourneyRetrieveSerializer(JourneySerializer):
+    route = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="title"
+    )
     train = TrainSerializer()
 
 
 class TicketSerializer(serializers.ModelSerializer):
+    train = TrainSerializer(many=False, read_only=True)
+    journey = JourneySerializer(many=False, read_only=True)
+
     class Meta:
         model = Ticket
         fields = ("id", "train", "cargo", "seat", "journey",)
+
+    def validate(self, attrs):
+        Ticket.validate_seat(
+            attrs["seat"],
+            attrs["train"].seats_in_train,
+            serializers.ValidationError
+        )
+        return attrs
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -126,19 +133,9 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ("id", "created_at", "tickets",)
 
     def create(self, validated_data):
-        print(validated_data)
         with transaction.atomic():
             tickets_data = validated_data.pop('tickets')
             order = Order.objects.create(**validated_data)
             for ticket_data in tickets_data:
                 Ticket.objects.create(order=order, **ticket_data)
             return order
-
-
-class TicketListSerializer(TicketSerializer):
-    train = serializers.SlugRelatedField(
-        read_only=True,
-        many=False,
-        slug_field="name"
-    )
-
