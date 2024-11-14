@@ -20,7 +20,7 @@ from station.serializers import (
     OrderSerializer,
     JourneySerializer,
     RouteListSerializer,
-    JourneyRetrieveSerializer,
+    JourneyRetrieveSerializer, OrderListSerializer,
 )
 
 
@@ -91,17 +91,37 @@ class JourneyViewSet(viewsets.ModelViewSet):
         return JourneySerializer
 
     def get_queryset(self):
-        queryset = self.queryset.select_related()
+        queryset = self.queryset
+        if self.action in ('list', 'retrieve'):
+            queryset = queryset.select_related('train', 'route')
 
-
+        return queryset
 
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
+
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        queryset = self.queryset.filter(user=self.request.user)
+
+        if self.action == 'list':
+            queryset = queryset.prefetch_related(
+                "tickets__train",
+                "tickets__journey",
+                "tickets__journey__route"
+            )
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        serializer = self.serializer_class
+
+        if self.action == 'list':
+            serializer = OrderListSerializer
+
+        return serializer

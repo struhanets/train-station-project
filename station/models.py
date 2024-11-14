@@ -98,6 +98,7 @@ class Ticket(models.Model):
 
     class Meta:
         unique_together = ("seat", "journey")
+        ordering = ("seat",)
 
     def __str__(self):
         return f"{self.journey} - (seat - {self.seat})"
@@ -110,8 +111,3 @@ class Ticket(models.Model):
                     "seat": f"The seat must be in range [1, {num_seats}]"
                 }
             )
-
-    def clean(self):
-        Ticket.validate_seat(self.seat, self.train.seats_in_train, ValueError)
-
-

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "user",
     'rest_framework',
     "debug_toolbar",
+    'rest_framework.authtoken',
 ]
 
 AUTH_USER_MODEL = 'user.User'
@@ -130,10 +131,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#     'PAGE_SIZE': 10
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 2
+}
 
 INTERNAL_IPS = [
     "127.0.0.1",
