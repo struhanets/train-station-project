@@ -1,4 +1,6 @@
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
+from rest_framework.authentication import TokenAuthentication
 
 from station.models import (
     Train,
@@ -8,7 +10,6 @@ from station.models import (
     Crew,
     Journey,
     Order,
-    Ticket
 )
 
 from station.serializers import (
@@ -20,13 +21,15 @@ from station.serializers import (
     OrderSerializer,
     JourneySerializer,
     RouteListSerializer,
-    JourneyRetrieveSerializer, OrderListSerializer,
+    JourneyRetrieveSerializer,
+    OrderListSerializer,
 )
 
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
     serializer_class = TrainSerializer
+    authentication_classes = (TokenAuthentication,)
 
     def get_queryset(self):
         queryset = self.queryset.select_related()
@@ -38,20 +41,36 @@ class TrainViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="train_type",
+                type={"type": "array", "items": {"type": "number"}},
+                description="filter by train type ids (ex. ?train_type=1,2)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of trains and filter them by train_types"""
+        return super().list(request, *args, **kwargs)
+
 
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
+    authentication_classes = (TokenAuthentication,)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -74,15 +93,35 @@ class RouteViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="source",
+                type={"type": "string"},
+                description="filter source stations (ex. ?source=Kyiv)",
+            ),
+            OpenApiParameter(
+                name="destination",
+                type={"type": "string"},
+                description="filter source stations (ex. ?source=Krakow)"
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Filtering source or destination by stations name"""
+        return super().list(request, *args, **kwargs)
+
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
     serializer_class = JourneySerializer
+    authentication_classes = (TokenAuthentication,)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -101,7 +140,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-
+    authentication_classes = (TokenAuthentication,)
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
