@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 
@@ -26,6 +26,12 @@ from station.serializers import (
 )
 
 
+@extend_schema(
+    tags=["Trains"],
+    description="Endpoints to manage trains in the train system. "
+                "You can create, list, retrieve, update, "
+                "or delete train data."
+)
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
     serializer_class = TrainSerializer
@@ -55,18 +61,36 @@ class TrainViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
+@extend_schema(
+    tags=["Train_types"],
+    description="Endpoints to manage train_types in the train system. "
+                "You can create, list, retrieve, update, "
+                "or delete train_type data."
+)
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
     authentication_classes = (TokenAuthentication,)
 
 
+@extend_schema(
+    tags=["Stations"],
+    description="Endpoints to manage stations. "
+                "You can create, list, retrieve, update, "
+                "or delete station data."
+)
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
     authentication_classes = (TokenAuthentication,)
 
 
+@extend_schema(
+    tags=["Routes"],
+    description="Endpoints to manage routes. "
+                "You can create, list, retrieve, update, "
+                "or delete route data."
+)
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
@@ -112,12 +136,24 @@ class RouteViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
+@extend_schema(
+    tags=["Crews"],
+    description="Endpoints to manage crews in the train system. "
+                "You can create, list, retrieve, update, "
+                "or delete crew data."
+)
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
     authentication_classes = (TokenAuthentication,)
 
 
+@extend_schema(
+    tags=["Journeys"],
+    description="Endpoints to manage journeys. "
+                "You can create, list, retrieve, update, "
+                "or delete journey data."
+)
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
     serializer_class = JourneySerializer
@@ -137,6 +173,12 @@ class JourneyViewSet(viewsets.ModelViewSet):
         return queryset
 
 
+@extend_schema(
+    tags=["Orders"],
+    description="Endpoints to manage orders. "
+                "You can create, list, retrieve, update, "
+                "or delete order data."
+)
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer

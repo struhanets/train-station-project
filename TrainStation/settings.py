@@ -161,4 +161,14 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'order tickets for journey by train',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'TAGS': [
+        {'name': 'Journeys', 'description': 'Endpoints related to journeys'},
+        {'name': 'Stations', 'description': 'Endpoints related to'},
+        {'name': 'Routes', 'description': 'Endpoints related to'},
+        {'name': 'Trains', 'description': 'Endpoints related to'},
+        {'name': 'Train_types', 'description': 'Endpoints related to'},
+        {'name': 'Orders', 'description': 'Endpoints related to'},
+        {'name': 'Crews', 'description': 'Endpoints related to crews'},
+
+    ],
 }
