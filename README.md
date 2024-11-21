@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # Train Station API
 
