@@ -8,28 +8,49 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='TrainType',
+            name="TrainType",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
             ],
         ),
         migrations.CreateModel(
-            name='Train',
+            name="Train",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('cargo_number', models.IntegerField()),
-                ('places_in_cargo', models.IntegerField()),
-                ('train_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='station.traintype')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("cargo_number", models.IntegerField()),
+                ("places_in_cargo", models.IntegerField()),
+                (
+                    "train_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="station.traintype",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'trains',
+                "verbose_name_plural": "trains",
             },
         ),
     ]

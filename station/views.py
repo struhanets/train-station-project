@@ -29,8 +29,8 @@ from station.serializers import (
 @extend_schema(
     tags=["Trains"],
     description="Endpoints to manage trains in the train system. "
-                "You can create, list, retrieve, update, "
-                "or delete train data."
+    "You can create, list, retrieve, update, "
+    "or delete train data.",
 )
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
@@ -42,7 +42,9 @@ class TrainViewSet(viewsets.ModelViewSet):
 
         train_type = self.request.query_params.get("train_type")
         if train_type:
-            train_type_ids = [int(train_type_id) for train_type_id in train_type.split(",")]
+            train_type_ids = [
+                int(train_type_id) for train_type_id in train_type.split(",")
+            ]
             queryset = queryset.filter(train_type__id__in=train_type_ids)
 
         return queryset
@@ -52,7 +54,7 @@ class TrainViewSet(viewsets.ModelViewSet):
             OpenApiParameter(
                 name="train_type",
                 type={"type": "array", "items": {"type": "number"}},
-                description="filter by train type ids (ex. ?train_type=1,2)"
+                description="filter by train type ids (ex. ?train_type=1,2)",
             )
         ]
     )
@@ -64,8 +66,8 @@ class TrainViewSet(viewsets.ModelViewSet):
 @extend_schema(
     tags=["Train_types"],
     description="Endpoints to manage train_types in the train system. "
-                "You can create, list, retrieve, update, "
-                "or delete train_type data."
+    "You can create, list, retrieve, update, "
+    "or delete train_type data.",
 )
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
@@ -76,8 +78,8 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
 @extend_schema(
     tags=["Stations"],
     description="Endpoints to manage stations. "
-                "You can create, list, retrieve, update, "
-                "or delete station data."
+    "You can create, list, retrieve, update, "
+    "or delete station data.",
 )
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
@@ -88,8 +90,8 @@ class StationViewSet(viewsets.ModelViewSet):
 @extend_schema(
     tags=["Routes"],
     description="Endpoints to manage routes. "
-                "You can create, list, retrieve, update, "
-                "or delete route data."
+    "You can create, list, retrieve, update, "
+    "or delete route data.",
 )
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
@@ -97,15 +99,15 @@ class RouteViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return RouteListSerializer
 
         return RouteSerializer
 
     def get_queryset(self):
         queryset = self.queryset
-        if self.action == 'list':
-            queryset = queryset.select_related('source', 'destination')
+        if self.action == "list":
+            queryset = queryset.select_related("source", "destination")
 
             source = self.request.query_params.get("source")
             destination = self.request.query_params.get("destination")
@@ -127,8 +129,8 @@ class RouteViewSet(viewsets.ModelViewSet):
             OpenApiParameter(
                 name="destination",
                 type={"type": "string"},
-                description="filter source stations (ex. ?source=Krakow)"
-            )
+                description="filter source stations (ex. ?source=Krakow)",
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -139,8 +141,8 @@ class RouteViewSet(viewsets.ModelViewSet):
 @extend_schema(
     tags=["Crews"],
     description="Endpoints to manage crews in the train system. "
-                "You can create, list, retrieve, update, "
-                "or delete crew data."
+    "You can create, list, retrieve, update, "
+    "or delete crew data.",
 )
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
@@ -151,8 +153,8 @@ class CrewViewSet(viewsets.ModelViewSet):
 @extend_schema(
     tags=["Journeys"],
     description="Endpoints to manage journeys. "
-                "You can create, list, retrieve, update, "
-                "or delete journey data."
+    "You can create, list, retrieve, update, "
+    "or delete journey data.",
 )
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
@@ -160,15 +162,15 @@ class JourneyViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return JourneyRetrieveSerializer
 
         return JourneySerializer
 
     def get_queryset(self):
         queryset = self.queryset
-        if self.action in ('list', 'retrieve'):
-            queryset = queryset.select_related('train', 'route')
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.select_related("train", "route")
 
         return queryset
 
@@ -176,8 +178,8 @@ class JourneyViewSet(viewsets.ModelViewSet):
 @extend_schema(
     tags=["Orders"],
     description="Endpoints to manage orders. "
-                "You can create, list, retrieve, update, "
-                "or delete order data."
+    "You can create, list, retrieve, update, "
+    "or delete order data.",
 )
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -187,11 +189,9 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
 
-        if self.action == 'list':
+        if self.action == "list":
             queryset = queryset.prefetch_related(
-                "tickets__train",
-                "tickets__journey",
-                "tickets__journey__route"
+                "tickets__train", "tickets__journey", "tickets__journey__route"
             )
 
         return queryset
@@ -202,7 +202,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = self.serializer_class
 
-        if self.action == 'list':
+        if self.action == "retrieve":
             serializer = OrderListSerializer
 
         return serializer

@@ -8,7 +8,9 @@ class Train(models.Model):
     name = models.CharField(max_length=100)
     cargo_number = models.IntegerField()
     places_in_cargo = models.IntegerField()
-    train_type = models.ForeignKey("TrainType", on_delete=models.CASCADE, related_name="trains")
+    train_type = models.ForeignKey(
+        "TrainType", on_delete=models.CASCADE, related_name="trains"
+    )
 
     class Meta:
         verbose_name_plural = "trains"
@@ -50,7 +52,9 @@ class Route(models.Model):
     @property
     def title(self):
         # Формуємо динамічне поле title на основі значень source, destination та distance
-        return f"{self.source.name} - {self.destination.name}, distance: {self.distance}"
+        return (
+            f"{self.source.name} - {self.destination.name}, distance: {self.distance}"
+        )
 
     def __str__(self):
         # Використовуємо властивість title для представлення об'єкта як рядка
@@ -90,10 +94,14 @@ class Order(models.Model):
 
 
 class Ticket(models.Model):
-    train = models.ForeignKey(Train, on_delete=models.CASCADE, related_name="train_tickets")
+    train = models.ForeignKey(
+        Train, on_delete=models.CASCADE, related_name="train_tickets"
+    )
     cargo = models.IntegerField()
     seat = models.IntegerField()
-    journey = models.ForeignKey(Journey, on_delete=models.CASCADE, related_name="journey_tickets")
+    journey = models.ForeignKey(
+        Journey, on_delete=models.CASCADE, related_name="journey_tickets"
+    )
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
     class Meta:
@@ -106,8 +114,4 @@ class Ticket(models.Model):
     @staticmethod
     def validate_seat(seat: int, num_seats: int, error_to_rise):
         if not (1 <= seat <= num_seats):
-            raise error_to_rise(
-                {
-                    "seat": f"The seat must be in range [1, {num_seats}]"
-                }
-            )
+            raise error_to_rise({"seat": f"The seat must be in range [1, {num_seats}]"})

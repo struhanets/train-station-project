@@ -11,7 +11,7 @@ from station.views import (
     OrderViewSet,
 )
 
-app_name = 'station'
+app_name = "station"
 
 router = routers.DefaultRouter()
 router.register("trains", TrainViewSet)
@@ -23,6 +23,4 @@ router.register("journeys", JourneyViewSet)
 router.register("orders", OrderViewSet)
 
 
-urlpatterns = [
-    path("", include(router.urls))
-]
+urlpatterns = [path("", include(router.urls))]
