@@ -55,14 +55,13 @@ install PostgresSQL and create db
 
 ## Run with Docker
 
-#Docker should be installed
+# Docker should be installed
 
 ```bash
 docker-compose build
 docker-compose up
 ```
 
-##Getting access
-
+## Getting access
 create user via api/user/register
 get access token via api/user/login
