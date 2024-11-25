@@ -35,7 +35,6 @@ from station.serializers import (
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
     serializer_class = TrainSerializer
-    authentication_classes = (TokenAuthentication,)
 
     def get_queryset(self):
         queryset = self.queryset.select_related()
@@ -72,7 +71,6 @@ class TrainViewSet(viewsets.ModelViewSet):
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
-    authentication_classes = (TokenAuthentication,)
 
 
 @extend_schema(
@@ -84,7 +82,6 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
-    authentication_classes = (TokenAuthentication,)
 
 
 @extend_schema(
@@ -96,7 +93,6 @@ class StationViewSet(viewsets.ModelViewSet):
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
-    authentication_classes = (TokenAuthentication,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -147,7 +143,6 @@ class RouteViewSet(viewsets.ModelViewSet):
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
-    authentication_classes = (TokenAuthentication,)
 
 
 @extend_schema(
@@ -159,7 +154,6 @@ class CrewViewSet(viewsets.ModelViewSet):
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
     serializer_class = JourneySerializer
-    authentication_classes = (TokenAuthentication,)
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -184,7 +178,6 @@ class JourneyViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    authentication_classes = (TokenAuthentication,)
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
