@@ -4,25 +4,27 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
-from station.models import Station
-from station.serializers import StationSerializer
+from station.models import Crew
+from station.serializers import CrewSerializer
 
-STATION_URL = reverse("station:station-list")
+CREW_URL = reverse("station:crew-list")
 
 
-def sample_station(**params):
-    default = {"name": "Test Station"}
-
+def sample_crew(**params):
+    default = {
+        "first_name": "John",
+        "last_name": "Smith"
+    }
     default.update(params)
-    return Station.objects.create(**default)
+    return Crew.objects.create(**default)
 
 
-class TrainUnAuthTest(TestCase):
+class CrewUnAuthTest(TestCase):
     def setUp(self):
         self.client = APIClient()
 
     def test_auth_required(self):
-        response = self.client.get(STATION_URL)
+        response = self.client.get(CREW_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -36,20 +38,24 @@ class TrainAuthTest(TestCase):
         self.client.force_authenticate(self.user)
 
     def test_trains_list(self):
-        sample_station()
-
-        response = self.client.get(STATION_URL)
-        stations = Station.objects.all()
-        serializer = StationSerializer(stations, many=True)
+        sample_crew()
+        response = self.client.get(CREW_URL)
+        crew = Crew.objects.all()
+        serializer = CrewSerializer(crew, many=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         self.assertEqual(response.data["results"], serializer.data)
 
-    def test_station_type_create(self):
-        payload = {"name": "Test Station"}
+    def test_trains_create(self):
+        payload = {
+            "first_name": "John",
+            "last_name": "Smith"
+        }
 
-        response = self.client.post(STATION_URL, payload)
+        response = self.client.post(CREW_URL, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        station = Station.objects.get(id=response.data["id"])
+        crew = Crew.objects.get(id=response.data["id"])
+
         for key in payload.keys():
-            self.assertEqual(payload[key], getattr(station, key))
+            self.assertEqual(payload[key], getattr(crew, key))

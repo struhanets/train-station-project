@@ -11,14 +11,12 @@ TRAIN_URL = reverse("station:train-list")
 
 
 def sample_train(**params) -> Train:
-    default_train_type = TrainType.objects.create(
-        name="Default"
-    )
+    default_train_type = TrainType.objects.create(name="Default")
     defaults = {
         "name": "IC000",
         "cargo_number": 6,
         "places_in_cargo": 60,
-        "train_type": default_train_type
+        "train_type": default_train_type,
     }
     defaults.update(params)
     return Train.objects.create(**defaults)
@@ -37,7 +35,8 @@ class TrainAuthTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            username="test", password="test111",
+            username="test",
+            password="test111",
         )
         self.client.force_authenticate(self.user)
 
@@ -60,14 +59,12 @@ class TrainAuthTest(TestCase):
         self.assertIn(serializer.data, response.data["results"])
 
     def test_trains_create(self):
-        default_train_type = TrainType.objects.create(
-            name="Default1"
-        )
+        default_train_type = TrainType.objects.create(name="Default1")
         payload = {
             "name": "IC111",
             "cargo_number": 4,
             "places_in_cargo": 50,
-            "train_type": default_train_type.id
+            "train_type": default_train_type.id,
         }
 
         response = self.client.post(TRAIN_URL, payload)

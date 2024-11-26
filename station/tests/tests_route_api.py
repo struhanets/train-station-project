@@ -7,16 +7,13 @@ from rest_framework.test import APIClient
 from station.models import Station, Route
 from station.serializers import RouteListSerializer
 
-ROUTE_URL = reverse('station:route-list')
+ROUTE_URL = reverse("station:route-list")
 
 
 def route_sample(**params):
-    default_source = Station.objects.create(name='default_source')
-    default_destination = Station.objects.create(name='default_destination')
-    defaults = {
-        "source": default_source,
-        "destination": default_destination
-    }
+    default_source = Station.objects.create(name="default_source")
+    default_destination = Station.objects.create(name="default_destination")
+    defaults = {"source": default_source, "destination": default_destination}
 
     defaults.update(params)
     return Route.objects.create(**defaults)
@@ -35,7 +32,8 @@ class TrainAuthTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            username="test", password="test111",
+            username="test",
+            password="test111",
         )
         self.client.force_authenticate(self.user)
 
@@ -60,15 +58,17 @@ class TrainAuthTest(TestCase):
     def test_routes_filter_by_destination(self):
         route = route_sample()
 
-        response = self.client.get(ROUTE_URL, {"destination": f"{route.destination.name}"})
+        response = self.client.get(
+            ROUTE_URL, {"destination": f"{route.destination.name}"}
+        )
         serializer = RouteListSerializer([route], many=True)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(serializer.data, response.data["results"])
 
     def test_routes_create(self):
-        default_source = Station.objects.create(name='default_source')
-        default_destination = Station.objects.create(name='default_destination')
+        default_source = Station.objects.create(name="default_source")
+        default_destination = Station.objects.create(name="default_destination")
 
         payload = {
             "source": default_source.id,

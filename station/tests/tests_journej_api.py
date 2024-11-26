@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 from station.models import Station, TrainType, Journey, Route, Train
 from station.serializers import JourneySerializer, JourneyRetrieveSerializer
 
-JOURNEY_URL = reverse('station:journey-list')
+JOURNEY_URL = reverse("station:journey-list")
 
 
 def detail_url(journey_id):
@@ -17,16 +17,14 @@ def detail_url(journey_id):
 
 
 def journey_sample(**params):
-    default_source = Station.objects.create(name='default_source')
-    default_destination = Station.objects.create(name='default_destination')
+    default_source = Station.objects.create(name="default_source")
+    default_destination = Station.objects.create(name="default_destination")
     default_route = Route.objects.create(
         source=default_source,
         destination=default_destination,
     )
 
-    default_train_type = TrainType.objects.create(
-        name="Default"
-    )
+    default_train_type = TrainType.objects.create(name="Default")
     default_train = Train.objects.create(
         name="IC000",
         cargo_number=6,
@@ -37,7 +35,7 @@ def journey_sample(**params):
         "route": default_route,
         "train": default_train,
         "departure_time": datetime.now(),
-        "arrival_time": datetime.now()
+        "arrival_time": datetime.now(),
     }
     default_journey.update(params)
     return Journey.objects.create(**default_journey)
@@ -56,7 +54,8 @@ class JourneyAuthTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            username="test", password="test111",
+            username="test",
+            password="test111",
         )
         self.client.force_authenticate(self.user)
 
@@ -81,16 +80,14 @@ class JourneyAuthTest(TestCase):
         self.assertEqual(response.data, serializer.data)
 
     def test_journeys_create(self):
-        default_source = Station.objects.create(name='default_source')
-        default_destination = Station.objects.create(name='default_destination')
+        default_source = Station.objects.create(name="default_source")
+        default_destination = Station.objects.create(name="default_destination")
         default_route = Route.objects.create(
             source=default_source,
             destination=default_destination,
         )
 
-        default_train_type = TrainType.objects.create(
-            name="Default"
-        )
+        default_train_type = TrainType.objects.create(name="Default")
         default_train = Train.objects.create(
             name="IC000",
             cargo_number=6,
@@ -101,7 +98,7 @@ class JourneyAuthTest(TestCase):
             "route": default_route.id,
             "train": default_train.id,
             "departure_time": datetime.now(),
-            "arrival_time": datetime.now()
+            "arrival_time": datetime.now(),
         }
 
         response = self.client.post(JOURNEY_URL, payload)
@@ -116,5 +113,3 @@ class JourneyAuthTest(TestCase):
                 self.assertEqual(payload[key], journey.train.id)
             else:
                 self.assertEqual(payload[key], getattr(journey, key))
-
-

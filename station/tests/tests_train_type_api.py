@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 from station.models import TrainType
 from station.serializers import TrainTypeSerializer
 
-TRAIN_TYPE_URL = reverse('station:traintype-list')
+TRAIN_TYPE_URL = reverse("station:traintype-list")
 
 
 def sample_train_type(**params):
@@ -30,7 +30,8 @@ class TrainAuthTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            username="test", password="test111",
+            username="test",
+            password="test111",
         )
         self.client.force_authenticate(self.user)
 

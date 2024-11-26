@@ -1,6 +1,5 @@
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
-from rest_framework.authentication import TokenAuthentication
 
 from station.models import (
     Train,
@@ -22,7 +21,7 @@ from station.serializers import (
     JourneySerializer,
     RouteListSerializer,
     JourneyRetrieveSerializer,
-    OrderListSerializer,
+    OrderRetrieveSerializer,
 )
 
 
@@ -196,6 +195,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class
 
         if self.action == "retrieve":
-            serializer = OrderListSerializer
+            serializer = OrderRetrieveSerializer
 
         return serializer
