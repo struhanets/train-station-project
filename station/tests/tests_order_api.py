@@ -6,7 +6,15 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
-from station.models import Order, Journey, TrainType, Train, Route, Station, Ticket
+from station.models import (
+    Order,
+    Journey,
+    TrainType,
+    Train,
+    Route,
+    Station,
+    Ticket
+)
 from station.serializers import OrderSerializer, OrderRetrieveSerializer
 
 ORDER_URL = reverse("station:order-list")
