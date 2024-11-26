@@ -54,13 +54,12 @@ class TrainAuthTest(TestCase):
         train = sample_train()
 
         response = self.client.get(TRAIN_URL, {"train_type": f"{train.train_type.id}"})
-        response_data = response.data["results"]  # Отримуємо дані із ключа "results"
 
-        serializer_type1 = TrainSerializer(train).data
+        serializer = TrainSerializer(train)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(serializer_type1, response_data)
+        self.assertIn(serializer.data, response.data["results"])
 
-    def test_create_train(self):
+    def test_trains_create(self):
         default_train_type = TrainType.objects.create(
             name="Default1"
         )
